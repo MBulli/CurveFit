@@ -111,9 +111,9 @@ namespace CurveFit
             }
 
             Matrix<double> polynomialData = null;
-            if (polinomEnabled)
+            if (polynomEnabled)
             {
-                polynomialData = PolynomialFunction(input, polinomDegree);
+                polynomialData = PolynomialFunction(input, polynomDegree);
                 resultColCount += polynomialData.ColumnCount;
             }
 
@@ -127,7 +127,7 @@ namespace CurveFit
                 colIndex += sineData.ColumnCount;
             }
 
-            if (polinomEnabled)
+            if (polynomEnabled)
             {
                 result.SetSubMatrix(0, colIndex, polynomialData);
                 //colIndex += polynomialData.ColumnCount;
@@ -135,8 +135,8 @@ namespace CurveFit
             return result;
         }
 
-        private bool polinomEnabled = false;
-        private int polinomDegree = 4;
+        private bool polynomEnabled = false;
+        private int polynomDegree = 4;
 
         private bool sinesEnabled = true;
         private double minFreq = 0.25;
