@@ -1,6 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,6 +31,8 @@ namespace CurveFit
             InitializeComponent();
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+            inkCanvas.AddHandler(InkCanvas.MouseDownEvent, new MouseButtonEventHandler(InkCanvas_OnMouseDown), true);
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
@@ -75,57 +78,80 @@ namespace CurveFit
             }
         }
 
-
-        private Matrix<double> PseudoInverse(Matrix<double> m)
+        
+        private Matrix<double> SineFunction(Vector<double> input, Vector<double> freqRange )
         {
-            double eps = 0;
-
-            var svd = m.Svd();
-            var V = svd.VT.Transpose();
-            var U = svd.U;
-            var S = svd.W;
-
-            var Sigma = Matrix<double>.Build.DenseOfDiagonalVector(rows: V.ColumnCount,
-                                                                   columns: U.RowCount,
-                                                                   diagonal: svd.S.PointwisePower(-1));
-
-            return V * Sigma * U.Transpose();
+            Matrix<double> result = Matrix<double>.Build.Dense(input.Count, freqRange.Count);
+            for (int i = 0; i < freqRange.Count; i++)
+            {
+                result.SetColumn(i, Sin(freqRange[i] * input));
+            }
+            return result;
         }
 
+        private Matrix<double> PolynomialFunction(Vector<double> input, int degree)
+        {
+            Debug.Assert(degree > 0);
+            Matrix<double> result = Matrix<double>.Build.Dense(input.Count, degree);
+            for (int i = 0; i < degree; i++)
+            {
+                result.SetColumn(i, input.PointwisePower(i+1));
+            }
+            return result;
+        }
+
+        private bool polinomEnabled = false;
+        private int polinomDegree = 4;
+
+        private bool sinesEnabled = true;
+        private double minFreq = 0.25;
+        private double stepFreq = 0.25;
+        private double maxFreq = 2.0;
         private void FitCurve()
         {
             var x = Vector<double>.Build.DenseOfEnumerable(XValues());
             var y = Vector<double>.Build.DenseOfEnumerable(YValues());
 
-            double k = 1 / 160.0;
+            int aSize = 1;
 
-            var kv = Vector<double>.Build.DenseOfEnumerable(Range(0.5, 0.1, 2.0));
-            kv *= k;
-
-            var A = Matrix<double>.Build.Dense(x.Count, kv.Count + 1);
-
-            for (int i = 0; i < A.RowCount; i++)
+            Matrix<double> sineData = null;
+            if (sinesEnabled)
             {
-                var row = Vector<double>.Build.Dense(kv.Count + 1);
-                row[0] = 1;
-
-                var factors = Sin(kv * x[i]);
-                factors.CopySubVectorTo(row, 0, 1, kv.Count);
-
-                A.SetRow(i, row);
+                sineData = SineFunction(x, Vector<double>.Build.DenseOfEnumerable(Range(minFreq, stepFreq, maxFreq))*(Math.PI/inkCanvas.ActualWidth));
+                aSize += sineData.ColumnCount;
             }
 
-            var parameter = PseudoInverse(A) * y;
+            Matrix<double> polynomialData = null;
+            if (polinomEnabled)
+            {
+                polynomialData = PolynomialFunction(x, polinomDegree);
+                aSize += polynomialData.ColumnCount;
+            }
+
+            var A = Matrix<double>.Build.Dense(x.Count, aSize);
+            A.SetColumn(0, Vector<double>.Build.Dense(x.Count, 1));
+            int colIndex = 1;
+
+            if (sinesEnabled)
+            {
+                A.SetSubMatrix(0, colIndex, sineData);
+                colIndex += sineData.ColumnCount;
+            }
+
+            if (polinomEnabled)
+            {
+                A.SetSubMatrix(0, colIndex, polynomialData);
+                //colIndex += polynomialData.ColumnCount;
+            }
+
+            var parameter = A.PseudoInverse() * y;
+
+            var resultVect = A* parameter;
 
             var result = new StylusPointCollection();
-            for (int i = 0; i < inkCanvas.ActualWidth; i++)
+            for (int i = 0; i < x.Count; i++)
             {
-                var row = Vector<double>.Build.Dense(kv.Count + 1);
-                row[0] = 1;
-                var factors = Sin(kv * i);
-                factors.CopySubVectorTo(row, 0, 1, kv.Count);
-                var j = parameter.PointwiseMultiply(row).Sum();
-                result.Add(new StylusPoint(i, j));
+                result.Add(new StylusPoint(x[i], resultVect[i]));
             }
             inkCanvas.Strokes.Add(new Stroke(result, new DrawingAttributes { Color = Colors.Red }));
         }
@@ -143,6 +169,16 @@ namespace CurveFit
         private void inkCanvas_StylusUp(object sender, StylusEventArgs e)
         {
             FitCurve();
+        }
+
+        private void InkCanvas_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            FitCurve();
+        }
+
+        private void InkCanvas_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            inkCanvas.Strokes.Clear();
         }
     }
 }

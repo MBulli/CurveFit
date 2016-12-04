@@ -8,7 +8,7 @@
         Title="MainWindow" Height="350" Width="525">
     <Grid>
         <Grid Background="Gray" VerticalAlignment="Center" Height="1" />
-        <InkCanvas x:Name="inkCanvas" Margin="0,35,0,0" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" />
+        <InkCanvas x:Name="inkCanvas" Margin="0,35,0,0" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp"/>
         <Button x:Name="button" Content="Save" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>
         <Button x:Name="button1" Content="Clear" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="button1_Click"/>
         <Button x:Name="button2" Content="Fit" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Click="button2_Click"/>
