@@ -77,9 +77,8 @@ namespace CurveFit
                 yield return i;
             }
         }
-
         
-        private Matrix<double> SineFunction(Vector<double> input, Vector<double> freqRange )
+        private Matrix<double> SineFunction(Vector<double> input, Vector<double> freqRange)
         {
             Matrix<double> result = Matrix<double>.Build.Dense(input.Count, freqRange.Count);
             for (int i = 0; i < freqRange.Count; i++)
@@ -100,6 +99,42 @@ namespace CurveFit
             return result;
         }
 
+        private Matrix<double> PrepareMatrix(Vector<double> input)
+        {
+            int resultColCount = 1;
+
+            Matrix<double> sineData = null;
+            if (sinesEnabled)
+            {
+                sineData = SineFunction(input, Vector<double>.Build.DenseOfEnumerable(Range(minFreq, stepFreq, maxFreq)) * (Math.PI / 1000)); // inkCanvas.ActualWidth ca 1000
+                resultColCount += sineData.ColumnCount;
+            }
+
+            Matrix<double> polynomialData = null;
+            if (polinomEnabled)
+            {
+                polynomialData = PolynomialFunction(input, polinomDegree);
+                resultColCount += polynomialData.ColumnCount;
+            }
+
+            var result = Matrix<double>.Build.Dense(input.Count, resultColCount);
+            result.SetColumn(0, Vector<double>.Build.Dense(input.Count, 1));
+            int colIndex = 1;
+
+            if (sinesEnabled)
+            {
+                result.SetSubMatrix(0, colIndex, sineData);
+                colIndex += sineData.ColumnCount;
+            }
+
+            if (polinomEnabled)
+            {
+                result.SetSubMatrix(0, colIndex, polynomialData);
+                //colIndex += polynomialData.ColumnCount;
+            }
+            return result;
+        }
+
         private bool polinomEnabled = false;
         private int polinomDegree = 4;
 
@@ -107,51 +142,34 @@ namespace CurveFit
         private double minFreq = 0.25;
         private double stepFreq = 0.25;
         private double maxFreq = 2.0;
+
+        private bool plotForAllX = true;
         private void FitCurve()
         {
             var x = Vector<double>.Build.DenseOfEnumerable(XValues());
             var y = Vector<double>.Build.DenseOfEnumerable(YValues());
 
-            int aSize = 1;
-
-            Matrix<double> sineData = null;
-            if (sinesEnabled)
-            {
-                sineData = SineFunction(x, Vector<double>.Build.DenseOfEnumerable(Range(minFreq, stepFreq, maxFreq))*(Math.PI/inkCanvas.ActualWidth));
-                aSize += sineData.ColumnCount;
-            }
-
-            Matrix<double> polynomialData = null;
-            if (polinomEnabled)
-            {
-                polynomialData = PolynomialFunction(x, polinomDegree);
-                aSize += polynomialData.ColumnCount;
-            }
-
-            var A = Matrix<double>.Build.Dense(x.Count, aSize);
-            A.SetColumn(0, Vector<double>.Build.Dense(x.Count, 1));
-            int colIndex = 1;
-
-            if (sinesEnabled)
-            {
-                A.SetSubMatrix(0, colIndex, sineData);
-                colIndex += sineData.ColumnCount;
-            }
-
-            if (polinomEnabled)
-            {
-                A.SetSubMatrix(0, colIndex, polynomialData);
-                //colIndex += polynomialData.ColumnCount;
-            }
+            var A = PrepareMatrix(x);
 
             var parameter = A.PseudoInverse() * y;
 
-            var resultVect = A* parameter;
+            Vector<double> plotX;
+            Vector<double> plotY;
+            if (plotForAllX)
+            {
+                plotX = Vector<double>.Build.DenseOfEnumerable(Range(0, 1, inkCanvas.ActualWidth));
+                plotY = PrepareMatrix(plotX)*parameter;
+            }
+            else
+            {
+                plotX = x;
+                plotY = A*parameter;
+            }
 
             var result = new StylusPointCollection();
-            for (int i = 0; i < x.Count; i++)
+            for (int i = 0; i < plotX.Count; i++)
             {
-                result.Add(new StylusPoint(x[i], resultVect[i]));
+                result.Add(new StylusPoint(plotX[i], plotY[i]));
             }
             inkCanvas.Strokes.Add(new Stroke(result, new DrawingAttributes { Color = Colors.Red }));
         }
