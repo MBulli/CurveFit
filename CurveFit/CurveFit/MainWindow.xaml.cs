@@ -26,45 +26,55 @@ namespace CurveFit
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool PolynomEnabled => UsePolynomCheckBox.IsChecked ?? false;
+        private int PolynomDegree => (int) DegreeSlider.Value;
+
+        private bool SinesEnabled => UseSinesCheckBox.IsChecked ?? false;
+        private double MinFreq => MinFreqSlider.Value;
+        private double StepFreq => StepFreqSlider.Value;
+        private double MaxFreq => MaxFreqSlider.Value;
+
+        private bool plotForAllX = true;
+
         public MainWindow()
         {
             InitializeComponent();
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
 
-            inkCanvas.AddHandler(InkCanvas.MouseDownEvent, new MouseButtonEventHandler(InkCanvas_OnMouseDown), true);
+            InkCanvas.AddHandler(InkCanvas.MouseDownEvent, new MouseButtonEventHandler(InkCanvas_OnMouseDown), true);
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (inkCanvas.Strokes.Count > 0)
+            if (InkCanvas.Strokes.Count > 0)
             {
-                Stroke lastStroke = inkCanvas.Strokes.Last();
+                Stroke lastStroke = InkCanvas.Strokes.Last();
 
                 StringBuilder sb = new StringBuilder();
 
                 foreach (var p in lastStroke.StylusPoints)
                 {
-                    sb.AppendLine($"{p.X},{inkCanvas.ActualHeight - p.Y}");
+                    sb.AppendLine($"{p.X},{InkCanvas.ActualHeight - p.Y}");
                 }
 
                 File.WriteAllText("test.csv", sb.ToString());
             }
         }
 
-        private void button1_Click(object sender, RoutedEventArgs e)
+        private void DegreeSlider_OnClick(object sender, RoutedEventArgs e)
         {
-            inkCanvas.Strokes.Clear();
+            InkCanvas.Strokes.Clear();
         }
 
         private IEnumerable<double> XValues()
         {
-            return inkCanvas.Strokes.Last().StylusPoints.Select(p => p.X);
+            return InkCanvas.Strokes.Last().StylusPoints.Select(p => p.X);
         }
 
         private IEnumerable<double> YValues()
         {
-            return inkCanvas.Strokes.Last().StylusPoints.Select(p => p.Y);
+            return InkCanvas.Strokes.Last().StylusPoints.Select(p => p.Y);
         }
 
         private Vector<double> Sin(Vector<double> v)
@@ -104,16 +114,16 @@ namespace CurveFit
             int resultColCount = 1;
 
             Matrix<double> sineData = null;
-            if (sinesEnabled)
+            if (SinesEnabled)
             {
-                sineData = SineFunction(input, Vector<double>.Build.DenseOfEnumerable(Range(minFreq, stepFreq, maxFreq)) * (Math.PI / 1000)); // inkCanvas.ActualWidth ca 1000
+                sineData = SineFunction(input, Vector<double>.Build.DenseOfEnumerable(Range(MinFreq, StepFreq, MaxFreq)) * (Math.PI / 1000)); // inkCanvas.ActualWidth ca 1000
                 resultColCount += sineData.ColumnCount;
             }
 
             Matrix<double> polynomialData = null;
-            if (polynomEnabled)
+            if (PolynomEnabled)
             {
-                polynomialData = PolynomialFunction(input, polynomDegree);
+                polynomialData = PolynomialFunction(input, PolynomDegree);
                 resultColCount += polynomialData.ColumnCount;
             }
 
@@ -121,13 +131,13 @@ namespace CurveFit
             result.SetColumn(0, Vector<double>.Build.Dense(input.Count, 1));
             int colIndex = 1;
 
-            if (sinesEnabled)
+            if (SinesEnabled)
             {
                 result.SetSubMatrix(0, colIndex, sineData);
                 colIndex += sineData.ColumnCount;
             }
 
-            if (polynomEnabled)
+            if (PolynomEnabled)
             {
                 result.SetSubMatrix(0, colIndex, polynomialData);
                 //colIndex += polynomialData.ColumnCount;
@@ -135,15 +145,6 @@ namespace CurveFit
             return result;
         }
 
-        private bool polynomEnabled = false;
-        private int polynomDegree = 4;
-
-        private bool sinesEnabled = true;
-        private double minFreq = 0.25;
-        private double stepFreq = 0.25;
-        private double maxFreq = 2.0;
-
-        private bool plotForAllX = true;
         private void FitCurve()
         {
             var x = Vector<double>.Build.DenseOfEnumerable(XValues());
@@ -157,7 +158,7 @@ namespace CurveFit
             Vector<double> plotY;
             if (plotForAllX)
             {
-                plotX = Vector<double>.Build.DenseOfEnumerable(Range(0, 1, inkCanvas.ActualWidth));
+                plotX = Vector<double>.Build.DenseOfEnumerable(Range(0, 1, InkCanvas.ActualWidth));
                 plotY = PrepareMatrix(plotX)*parameter;
             }
             else
@@ -171,17 +172,17 @@ namespace CurveFit
             {
                 result.Add(new StylusPoint(plotX[i], plotY[i]));
             }
-            inkCanvas.Strokes.Add(new Stroke(result, new DrawingAttributes { Color = Colors.Red }));
+            InkCanvas.Strokes.Add(new Stroke(result, new DrawingAttributes { Color = Colors.Red }));
         }
 
-        private void button2_Click(object sender, RoutedEventArgs e)
+        private void FitButton_OnClick(object sender, RoutedEventArgs e)
         {
             FitCurve();
         }
 
         private void inkCanvas_StylusDown(object sender, StylusDownEventArgs e)
         {
-            inkCanvas.Strokes.Clear();
+            InkCanvas.Strokes.Clear();
         }
 
         private void inkCanvas_StylusUp(object sender, StylusEventArgs e)
@@ -196,7 +197,7 @@ namespace CurveFit
 
         private void InkCanvas_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            inkCanvas.Strokes.Clear();
+            InkCanvas.Strokes.Clear();
         }
     }
 }

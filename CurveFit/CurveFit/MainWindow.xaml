@@ -5,13 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CurveFit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="688">
     <Grid>
-        <Grid Background="Gray" VerticalAlignment="Center" Height="1" />
-        <InkCanvas x:Name="inkCanvas" Margin="0,35,0,0" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp"/>
-        <Button x:Name="button" Content="Save" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>
-        <Button x:Name="button1" Content="Clear" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="button1_Click"/>
-        <Button x:Name="button2" Content="Fit" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Click="button2_Click"/>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Top" Orientation="Horizontal" Margin="10">
+            <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="SaveButton_OnClick" Margin="0,0,5,0"/>
+            <Button x:Name="ClearButton" Content="Clear" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="DegreeSlider_OnClick" Margin="5,0,5,0"/>
+            <Button x:Name="FitButton" Content="Fit" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="FitButton_OnClick" Margin="5,0,5,0"/>
+        </StackPanel>
+        <Grid Background="Gray" VerticalAlignment="Center" Height="1" Grid.Row="1" />
+        <InkCanvas x:Name="InkCanvas" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp" Grid.Row="1"/>
+        <Grid VerticalAlignment="Bottom" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Grid.Row="0">
+                <CheckBox x:Name="UsePolynomCheckBox" Content="Use Polynom" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,10,10,10" IsChecked="True"/>
+                <TextBlock Text="Degree:" VerticalAlignment="Center" Margin="5"/>
+                <Slider x:Name="DegreeSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" SmallChange="1" Minimum="1" Maximum="10"/>
+                <TextBlock x:Name="DegreeDisplay" Text="{Binding ElementName=DegreeSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="20"/>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal"  Grid.Row="1">
+                <CheckBox x:Name="UseSinesCheckBox" Content="Use sines" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,10,10,10"/>
+                <TextBlock Text="Min freq.:" VerticalAlignment="Center" Margin="5"/>
+                <Slider x:Name="MinFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" SmallChange="0.1" Minimum="0.1" Maximum="3"/>
+                <TextBlock x:Name="MinFreqDisplay" Text="{Binding ElementName=MinFreqSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="20"/>
+                <TextBlock Text="Max freq.:" VerticalAlignment="Center" Margin="5"/>
+                <Slider x:Name="MaxFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" SmallChange="0.1" Minimum="0.1" Maximum="3" Value="3"/>
+                <TextBlock x:Name="MaxFreqDisplay" Text="{Binding ElementName=MaxFreqSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="20"/>
+                <TextBlock Text="Step freq.:" VerticalAlignment="Center" Margin="5"/>
+                <Slider x:Name="StepFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" SmallChange="0.05" Minimum="0.05" Maximum="1"/>
+                <TextBlock x:Name="StepFreqDisplay" Text="{Binding ElementName=StepFreqSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="24"/>
+            </StackPanel>
+            
+        </Grid>
     </Grid>
 </Window>
