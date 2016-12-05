@@ -34,7 +34,9 @@ namespace CurveFit
         private double StepFreq => StepFreqSlider.Value;
         private double MaxFreq => MaxFreqSlider.Value;
 
-        private bool plotForAllX = true;
+        private bool PlotForAllX => PlotAllXCheckBox.IsChecked ?? false;
+
+        private readonly List<Func<Vector<double>, Matrix<double>>> _availableFunctions;
 
         public MainWindow()
         {
@@ -43,6 +45,13 @@ namespace CurveFit
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
 
             InkCanvas.AddHandler(InkCanvas.MouseDownEvent, new MouseButtonEventHandler(InkCanvas_OnMouseDown), true);
+
+            _availableFunctions = new List<Func<Vector<double>, Matrix<double>>>
+            {
+                BaselineFunction,
+                SineFunction,
+                PolynomialFunction
+            };
         }
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
@@ -87,9 +96,18 @@ namespace CurveFit
                 yield return i;
             }
         }
-        
-        private Matrix<double> SineFunction(Vector<double> input, Vector<double> freqRange)
+
+        private Matrix<double> BaselineFunction(Vector<double> input)
         {
+            return Vector<double>.Build.Dense(input.Count, 1).ToColumnMatrix();
+        }
+
+        private Matrix<double> SineFunction(Vector<double> input)
+        {
+            if (!SinesEnabled)
+                return null;
+
+            var freqRange = Vector<double>.Build.DenseOfEnumerable(Range(MinFreq, StepFreq, MaxFreq))*(Math.PI/1000);
             Matrix<double> result = Matrix<double>.Build.Dense(input.Count, freqRange.Count);
             for (int i = 0; i < freqRange.Count; i++)
             {
@@ -98,11 +116,14 @@ namespace CurveFit
             return result;
         }
 
-        private Matrix<double> PolynomialFunction(Vector<double> input, int degree)
+        private Matrix<double> PolynomialFunction(Vector<double> input)
         {
-            Debug.Assert(degree > 0);
-            Matrix<double> result = Matrix<double>.Build.Dense(input.Count, degree);
-            for (int i = 0; i < degree; i++)
+            if (!PolynomEnabled)
+                return null;
+
+            Debug.Assert(PolynomDegree > 0);
+            Matrix<double> result = Matrix<double>.Build.Dense(input.Count, PolynomDegree);
+            for (int i = 0; i < PolynomDegree; i++)
             {
                 result.SetColumn(i, input.PointwisePower(i+1));
             }
@@ -111,38 +132,8 @@ namespace CurveFit
 
         private Matrix<double> PrepareMatrix(Vector<double> input)
         {
-            int resultColCount = 1;
-
-            Matrix<double> sineData = null;
-            if (SinesEnabled)
-            {
-                sineData = SineFunction(input, Vector<double>.Build.DenseOfEnumerable(Range(MinFreq, StepFreq, MaxFreq)) * (Math.PI / 1000)); // inkCanvas.ActualWidth ca 1000
-                resultColCount += sineData.ColumnCount;
-            }
-
-            Matrix<double> polynomialData = null;
-            if (PolynomEnabled)
-            {
-                polynomialData = PolynomialFunction(input, PolynomDegree);
-                resultColCount += polynomialData.ColumnCount;
-            }
-
-            var result = Matrix<double>.Build.Dense(input.Count, resultColCount);
-            result.SetColumn(0, Vector<double>.Build.Dense(input.Count, 1));
-            int colIndex = 1;
-
-            if (SinesEnabled)
-            {
-                result.SetSubMatrix(0, colIndex, sineData);
-                colIndex += sineData.ColumnCount;
-            }
-
-            if (PolynomEnabled)
-            {
-                result.SetSubMatrix(0, colIndex, polynomialData);
-                //colIndex += polynomialData.ColumnCount;
-            }
-            return result;
+            var matrices = _availableFunctions.Select(func => func(input)).Where(x => x != null);
+            return Matrix<double>.Build.DenseOfColumnVectors(matrices.SelectMany(matrix => matrix.EnumerateColumns()));
         }
 
         private void FitCurve()
@@ -156,7 +147,7 @@ namespace CurveFit
 
             Vector<double> plotX;
             Vector<double> plotY;
-            if (plotForAllX)
+            if (PlotForAllX)
             {
                 plotX = Vector<double>.Build.DenseOfEnumerable(Range(0, 1, InkCanvas.ActualWidth));
                 plotY = PrepareMatrix(plotX)*parameter;
