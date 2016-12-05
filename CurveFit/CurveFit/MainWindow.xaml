@@ -28,19 +28,19 @@
             <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Grid.Row="1">
                 <CheckBox x:Name="UsePolynomCheckBox" Content="Use Polynom" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,10,10,10" IsChecked="True"/>
                 <TextBlock Text="Degree:" VerticalAlignment="Center" Margin="5"/>
-                <Slider x:Name="DegreeSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" SmallChange="1" Minimum="1" Maximum="10" IsEnabled="{Binding ElementName=UsePolynomCheckBox, Path=IsChecked}"/>
+                <Slider x:Name="DegreeSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" IsSnapToTickEnabled="True" TickFrequency="1" Minimum="1" Maximum="10" IsEnabled="{Binding ElementName=UsePolynomCheckBox, Path=IsChecked}"/>
                 <TextBlock x:Name="DegreeDisplay" Text="{Binding ElementName=DegreeSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="20"/>
             </StackPanel>
             <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal"  Grid.Row="2">
                 <CheckBox x:Name="UseSinesCheckBox" Content="Use sines" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,10,10,10"/>
                 <TextBlock Text="Min freq.:" VerticalAlignment="Center" Margin="5"/>
-                <Slider x:Name="MinFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" SmallChange="0.1" Minimum="0.1" Maximum="3" IsEnabled="{Binding ElementName=UseSinesCheckBox, Path=IsChecked}"/>
+                <Slider x:Name="MinFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" IsSnapToTickEnabled="True" TickFrequency="0.1" Minimum="0.1" Maximum="3" IsEnabled="{Binding ElementName=UseSinesCheckBox, Path=IsChecked}"/>
                 <TextBlock x:Name="MinFreqDisplay" Text="{Binding ElementName=MinFreqSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="20"/>
                 <TextBlock Text="Max freq.:" VerticalAlignment="Center" Margin="5"/>
-                <Slider x:Name="MaxFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" SmallChange="0.1" Minimum="0.1" Maximum="3" Value="3" IsEnabled="{Binding ElementName=UseSinesCheckBox, Path=IsChecked}"/>
+                <Slider x:Name="MaxFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" IsSnapToTickEnabled="True" TickFrequency="0.1" Minimum="0.1" Maximum="3" Value="3" IsEnabled="{Binding ElementName=UseSinesCheckBox, Path=IsChecked}"/>
                 <TextBlock x:Name="MaxFreqDisplay" Text="{Binding ElementName=MaxFreqSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="20"/>
                 <TextBlock Text="Step freq.:" VerticalAlignment="Center" Margin="5"/>
-                <Slider x:Name="StepFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="1" SmallChange="0.05" Minimum="0.05" Maximum="1" IsEnabled="{Binding ElementName=UseSinesCheckBox, Path=IsChecked}"/>
+                <Slider x:Name="StepFreqSlider" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2" IsSnapToTickEnabled="True" TickFrequency="0.05" Minimum="0.05" Maximum="1" IsEnabled="{Binding ElementName=UseSinesCheckBox, Path=IsChecked}"/>
                 <TextBlock x:Name="StepFreqDisplay" Text="{Binding ElementName=StepFreqSlider, Path=Value}" VerticalAlignment="Center" Margin="5,10,0,10" Width="24"/>
             </StackPanel>
         </Grid>
