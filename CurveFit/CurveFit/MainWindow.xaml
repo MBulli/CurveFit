@@ -7,18 +7,14 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="441" Width="688">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="1*"/>
-        </Grid.RowDefinitions>
+        <InkCanvas x:Name="InkCanvas" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp"/>
         <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Top" Orientation="Horizontal" Margin="10">
             <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="SaveButton_OnClick" Margin="0,0,5,0"/>
             <Button x:Name="ClearButton" Content="Clear" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="DegreeSlider_OnClick" Margin="5,0,5,0"/>
             <Button x:Name="FitButton" Content="Fit" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="FitButton_OnClick" Margin="5,0,5,0"/>
         </StackPanel>
-        <Grid Background="Gray" VerticalAlignment="Center" Height="1" Grid.Row="1" />
-        <InkCanvas x:Name="InkCanvas" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp" Grid.Row="1" />
-        <Grid VerticalAlignment="Bottom" Grid.Row="1">
+        <Grid Background="Gray" VerticalAlignment="Center" Height="1"/>
+        <Grid VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
