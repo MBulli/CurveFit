@@ -120,6 +120,9 @@ namespace CurveFit
 
         private void FitCurve()
         {
+            if (InkCanvas.Strokes.Count == 0)
+                return;
+
             var x = Vector<double>.Build.DenseOfEnumerable(XValues());
             var y = Vector<double>.Build.DenseOfEnumerable(YValues());
 
