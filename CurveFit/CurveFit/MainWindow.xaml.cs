@@ -42,8 +42,6 @@ namespace CurveFit
         {
             InitializeComponent();
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-
             InkCanvas.AddHandler(InkCanvas.MouseDownEvent, new MouseButtonEventHandler(InkCanvas_OnMouseDown), true);
 
             _availableFunctions = new List<Func<Vector<double>, Matrix<double>>>
@@ -52,28 +50,6 @@ namespace CurveFit
                 SineFunction,
                 PolynomialFunction
             };
-        }
-
-        private void SaveButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (InkCanvas.Strokes.Count > 0)
-            {
-                Stroke lastStroke = InkCanvas.Strokes.Last();
-
-                StringBuilder sb = new StringBuilder();
-
-                foreach (var p in lastStroke.StylusPoints)
-                {
-                    sb.AppendLine($"{p.X},{InkCanvas.ActualHeight - p.Y}");
-                }
-
-                File.WriteAllText("test.csv", sb.ToString());
-            }
-        }
-
-        private void DegreeSlider_OnClick(object sender, RoutedEventArgs e)
-        {
-            InkCanvas.Strokes.Clear();
         }
 
         private IEnumerable<double> XValues()
@@ -164,11 +140,6 @@ namespace CurveFit
                 result.Add(new StylusPoint(plotX[i], plotY[i]));
             }
             InkCanvas.Strokes.Add(new Stroke(result, new DrawingAttributes { Color = Colors.Red }));
-        }
-
-        private void FitButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            FitCurve();
         }
 
         private void inkCanvas_StylusDown(object sender, StylusDownEventArgs e)
