@@ -54,12 +54,18 @@ namespace CurveFit
 
         private IEnumerable<double> XValues()
         {
-            return InkCanvas.Strokes.Last().StylusPoints.Select(p => p.X);
+            if (InkCanvas.Strokes.Count == 0)
+                return Enumerable.Empty<double>();
+            else
+                return InkCanvas.Strokes.Last().StylusPoints.Select(p => p.X);
         }
 
         private IEnumerable<double> YValues()
         {
-            return InkCanvas.Strokes.Last().StylusPoints.Select(p => p.Y);
+            if (InkCanvas.Strokes.Count == 0)
+                return Enumerable.Empty<double>();
+            else
+                return InkCanvas.Strokes.Last().StylusPoints.Select(p => p.Y);
         }
 
         private Vector<double> Sin(Vector<double> v)
