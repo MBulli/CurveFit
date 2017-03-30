@@ -33,6 +33,7 @@ namespace CurveFit
         private double MinFreq => MinFreqSlider.Value;
         private double StepFreq => StepFreqSlider.Value;
         private double MaxFreq => MaxFreqSlider.Value;
+        private double OneHzValue => OneHzMarker.ActualWidth;
 
         private bool PlotForAllX => PlotAllXCheckBox.IsChecked ?? false;
 
@@ -73,7 +74,7 @@ namespace CurveFit
 
         private IEnumerable<double> Range(double start, double step, double end)
         {
-            for (double i = start; i < end; i += step)
+            for (double i = start; i <= end; i += step)
             {
                 yield return i;
             }
@@ -89,7 +90,7 @@ namespace CurveFit
             if (!SinesEnabled)
                 return null;
 
-            var freqRange = Vector<double>.Build.DenseOfEnumerable(Range(MinFreq, StepFreq, MaxFreq))*(Math.PI/1000);
+            var freqRange = Vector<double>.Build.DenseOfEnumerable(Range(MinFreq, StepFreq, MaxFreq))*(2*Math.PI/OneHzValue);
             Matrix<double> result = Matrix<double>.Build.Dense(input.Count, freqRange.Count);
             for (int i = 0; i < freqRange.Count; i++)
             {
@@ -126,7 +127,7 @@ namespace CurveFit
             var x = Vector<double>.Build.DenseOfEnumerable(XValues());
             var y = Vector<double>.Build.DenseOfEnumerable(YValues());
 
-            var A = PrepareMatrix(x);
+            var A = PrepareMatrix(x - InkCanvas.ActualWidth / 2);
 
             var parameter = A.PseudoInverse() * y;
 
@@ -135,7 +136,7 @@ namespace CurveFit
             if (PlotForAllX)
             {
                 plotX = Vector<double>.Build.DenseOfEnumerable(Range(0, 1, InkCanvas.ActualWidth));
-                plotY = PrepareMatrix(plotX)*parameter;
+                plotY = PrepareMatrix(plotX - InkCanvas.ActualWidth / 2) *parameter;
             }
             else
             {
@@ -169,6 +170,25 @@ namespace CurveFit
         private void InkCanvas_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkCanvas.Strokes.Clear();
+        }
+    }
+
+    [ValueConversion(typeof (double), typeof (double))]
+    public class WidthToOneHzFreqConverter : IValueConverter
+    {
+        private static double maxWidth = 2000;
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            //y = x - x ^ 2 / (max * 2)
+            double? input = value as double?;
+            if (input == null) return 0.0;
+            if (input.Value > maxWidth) return maxWidth/2;
+            return input.Value - Math.Pow(input.Value, 2) / (maxWidth * 2);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

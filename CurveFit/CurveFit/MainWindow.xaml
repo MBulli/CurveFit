@@ -6,9 +6,14 @@
         xmlns:local="clr-namespace:CurveFit"
         mc:Ignorable="d"
         Title="MainWindow" Height="441" Width="688">
-    <Grid>
-        <InkCanvas x:Name="InkCanvas" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp"/>
+    <Window.Resources>
+        <local:WidthToOneHzFreqConverter x:Key="WidthToOneHzFreqConverter"/>
+    </Window.Resources>
+    <Grid Name="MainGrid">
         <Grid Background="Gray" VerticalAlignment="Center" Height="1"/>
+        <Grid Background="Gray" HorizontalAlignment="Center" Width="1"/>
+        <Grid Name="OneHzMarker" Background="DimGray" VerticalAlignment="Center" Height="3" Width="{Binding ElementName=MainGrid, Path=ActualWidth, Converter={StaticResource WidthToOneHzFreqConverter}}"/>
+        <InkCanvas x:Name="InkCanvas" Background="Transparent" StylusDown="inkCanvas_StylusDown" StylusUp="inkCanvas_StylusUp" MouseUp="InkCanvas_OnMouseUp"/>
         <Grid VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
